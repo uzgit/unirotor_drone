@@ -1,7 +1,9 @@
-include <honeycomb.scad>
-include <roundedcube.scad>
+include <../lib/honeycomb.scad>
+include <../lib/roundedcube.scad>
+include <../lib/BOSL2/std.scad>
+include <../lib/BOSL2/hinges.scad>
 
-$fn = 30;
+$fn = 120;
 radius = 75;
 
 propeller_cage_height = 100;
@@ -11,7 +13,6 @@ control_surface_height = 30;
 inner_brace_height = propeller_cage_height - propeller_cavity_height - control_surface_height;
 motor_mount_radius = 21;
 component_space_radius = 35;
-
 protective_grid_thickness = 2;
 protective_grid_hexagon_diameter = 25;
 protective_grid_wall_thickness = 2;
@@ -91,19 +92,19 @@ difference()
 //}
 
 // top honeycomb
-translate([-radius, -radius, propeller_cage_height-protective_grid_thickness])
-linear_extrude(height=protective_grid_thickness)
-difference()
-{
-    honeycomb(2*radius, 2*radius, protective_grid_hexagon_diameter, protective_grid_wall_thickness);
-    
-    translate([radius, radius, 0])
-    difference()
-    {
-        square([1000, 1000], center=true);
-        circle(r=radius);
-    }
-}
+//translate([-radius, -radius, propeller_cage_height-protective_grid_thickness])
+//linear_extrude(height=protective_grid_thickness)
+//difference()
+//{
+//    honeycomb(2*radius, 2*radius, protective_grid_hexagon_diameter, protective_grid_wall_thickness);
+//    
+//    translate([radius, radius, 0])
+//    difference()
+//    {
+//        square([1000, 1000], center=true);
+//        circle(r=radius);
+//    }
+//}
 
 //// leg
 //translate([0, 0, propeller_cage_thickness/2])
