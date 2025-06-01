@@ -13,7 +13,7 @@ component_space_length = 150;
 propeller_cage_height = 90;
 propeller_cage_thickness = 5;
 propeller_cavity_height = 30;
-control_surface_height = 30;
+control_surface_height = 16.2;
 
 // inner braces
 num_inner_braces = 3;
@@ -21,7 +21,8 @@ inner_brace_height = propeller_cage_height - propeller_cavity_height - control_s
 
 num_motor_mount_screws = 3;
 motor_mount_screw_size = 3.1;
-motor_mount_screw_radius = 12;
+motor_mount_screw_radius = 11;
+motor_rear_shaft_diameter = 13;
 
 // motor mount and component space
 protective_grid_thickness = 2;
@@ -184,9 +185,6 @@ module pill(component_space_radius=component_space_radius, motor_mount_radius=mo
             difference()
             {
                 sphere(r=component_space_radius);
-                
-                translate([0, 0, size_of_everything/2 + d])
-                cube(size_of_everything, center=true);
             }
             translate([0, 0, radius - component_space_length])
             sphere(r=component_space_radius);
@@ -223,12 +221,16 @@ module component_space_pill(shell_thickness=2, motor_mount_thickness=6)
             translate([0, 0, -motor_mount_thickness])
             cube(size_of_everything, center=true);
             
+            // motor mount
             for( _angle = [0 : 360 / num_motor_mount_screws : 359] )
             {
                 rotate([0, 0, _angle])
                 translate([0, motor_mount_screw_radius, -motor_mount_thickness/2])
                 cylinder(d=motor_mount_screw_size, h=motor_mount_thickness + 10, center=true);
             }
+            
+            translate([0, 0, -motor_mount_thickness/2])
+            cylinder(d=motor_rear_shaft_diameter, h=motor_mount_thickness + 10, center=true);
         }
     }
     
@@ -243,23 +245,33 @@ module component_space_pill(shell_thickness=2, motor_mount_thickness=6)
     }
 }
 
-
-
 module unirotor_drone_body()
 {
     duct();
     
     shell_thickness = 5;
     
-    translate([0, 0, 70])
-    component_space_pill(shell_thickness=propeller_cage_thickness);
     difference()
     {
-        inner_braces();
+        translate([0, 0, 70])
+        component_space_pill(shell_thickness=propeller_cage_thickness);
         
-        translate([0, 0, component_space_length])
-        translate([0, 0, -component_space_radius])
-        pill(component_space_radius=component_space_radius - shell_thickness, motor_mount_radius=motor_mount_radius, length=component_space_length - shell_thickness, shell_thickness=0);
+        translate([0, 0, -500])
+        cube(1000, center=true);
+    }
+    difference()
+    {
+        union()
+        {
+            inner_braces();
+        }
+        
+        union()
+        {
+            translate([0, 0, component_space_length - 70])
+            translate([0, 0, -component_space_radius])
+            pill(component_space_radius=component_space_radius - shell_thickness, motor_mount_radius=motor_mount_radius, length=component_space_length - shell_thickness, shell_thickness=0);
+        }
     }
 //        component_space();
     control_surfaces();
