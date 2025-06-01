@@ -21,8 +21,9 @@ inner_brace_height = propeller_cage_height - propeller_cavity_height - control_s
 
 num_motor_mount_screws = 3;
 motor_mount_screw_size = 3.1;
-motor_mount_screw_radius = 11;
-motor_rear_shaft_diameter = 13;
+motor_mount_screw_radius = 16;
+motor_rear_shaft_diameter = 11;
+motor_mount_thickness = 6;
 
 // motor mount and component space
 protective_grid_thickness = 2;
@@ -200,7 +201,17 @@ module pill(component_space_radius=component_space_radius, motor_mount_radius=mo
     }
 }
 
-module component_space_pill(shell_thickness=2, motor_mount_thickness=6)
+module motor_mount_holes()
+{
+    for( _angle = [0 : 360 / num_motor_mount_screws : 359] )
+    {
+        rotate([0, 0, _angle])
+        translate([0, motor_mount_screw_radius, -motor_mount_thickness/2])
+        cylinder(d=motor_mount_screw_size, h=motor_mount_thickness + 10, center=true);
+    }
+}
+
+module component_space_pill(shell_thickness=2)
 {
     d = sqrt( component_space_radius^2 - motor_mount_radius^2 );
     
@@ -220,14 +231,6 @@ module component_space_pill(shell_thickness=2, motor_mount_thickness=6)
             translate([0, 0, -size_of_everything/2])
             translate([0, 0, -motor_mount_thickness])
             cube(size_of_everything, center=true);
-            
-            // motor mount
-            for( _angle = [0 : 360 / num_motor_mount_screws : 359] )
-            {
-                rotate([0, 0, _angle])
-                translate([0, motor_mount_screw_radius, -motor_mount_thickness/2])
-                cylinder(d=motor_mount_screw_size, h=motor_mount_thickness + 10, center=true);
-            }
             
             translate([0, 0, -motor_mount_thickness/2])
             cylinder(d=motor_rear_shaft_diameter, h=motor_mount_thickness + 10, center=true);
@@ -253,11 +256,20 @@ module unirotor_drone_body()
     
     difference()
     {
-        translate([0, 0, 70])
-        component_space_pill(shell_thickness=propeller_cage_thickness);
+        union()
+        {
+            translate([0, 0, 70])
+            component_space_pill(shell_thickness=propeller_cage_thickness);
+        }
         
-        translate([0, 0, -500])
-        cube(1000, center=true);
+        union()
+        {
+            translate([0, 0, 70])
+            motor_mount_holes();
+            
+            translate([0, 0, -500])
+            cube(1000, center=true);
+        }
     }
     difference()
     {
