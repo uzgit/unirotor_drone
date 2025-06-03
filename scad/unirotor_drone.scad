@@ -4,25 +4,26 @@ include <../lib/BOSL2/std.scad>
 include <../lib/BOSL2/hinges.scad>
 
 $fn = 130;
-duct_radius = 50;
+duct_radius = 80;
 duct_thickness = 5; // radius from outer to outer is duct_radius + duct_thickness
-duct_height = 60;
-propeller_cavity_height = 10; // distance from the top of the duct to the bottom of the motor mount
+duct_height = 100;
+propeller_cavity_height = 40; // distance from the top of the duct to the bottom of the motor mount
 
 component_space_radius = 30;
 component_space_length = 150;
 component_space_shell_thickness = 5;
 
-motor_mount_radius = 21;
+motor_mount_radius = 23;
 motor_mount_thickness = 6;
 num_motor_mount_screw_holes = 3;
-motor_mount_screw_hole_angle_offset = 180; // so they don't intersect the inner braces
+motor_mount_screw_hole_angle_offset = 0; // so they don't intersect the inner braces
 num_motor_mount_screw_hole_diameter = 3.1;
 num_motor_mount_screw_radius_from_center = 16;
+motor_wire_outlet_radius = 20;
 motor_rear_shaft_diameter = 11;
 
 num_inner_braces = 3; // connecting the component space to the duct and having a control surface
-control_surface_height = 10;
+control_surface_height = 20;
 control_surface_thickness = duct_thickness;
 control_surface_length = duct_radius - component_space_radius - 5;
 control_surface_seg_gap = 0.2;
@@ -37,7 +38,7 @@ module servo_voids()
 {
     servo_x = 12;
     servo_y = 31.6;
-    servo_z = 24;
+    servo_z = 25;
     servo_extension_z = 32;
     
     angle_delta = 360 / num_inner_braces;
@@ -184,6 +185,9 @@ module motor_mount()
                 
                 cylinder(d=motor_rear_shaft_diameter, h=motor_mount_thickness);
             }
+            
+            translate([0, -motor_wire_outlet_radius, -motor_mount_thickness/2])
+            roundedcube([10, 5, 10], r=4, center=true);
         }
     }
 }
