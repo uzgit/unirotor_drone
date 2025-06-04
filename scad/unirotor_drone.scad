@@ -25,21 +25,26 @@ motor_rear_shaft_diameter = 11;
 num_inner_braces = 3; // connecting the component space to the duct and having a control surface
 control_surface_height = 20;
 control_surface_thickness = duct_thickness;
-control_surface_length = duct_radius - component_space_radius - 5;
+control_surface_length = duct_radius - component_space_radius - 7.5;
 control_surface_seg_gap = 0.2;
 control_surface_end_space = 0.6;
 control_surface_vertical_offset_idk = 6.2;
 control_surface_ang=0;
+control_surface_y_offset = - 3;
 
 servo_angle_offset = 25; // difference from inner braces and control surfaces
 servo_z_translation = 10; // from z=0
+
+upwards_servo_mount_radius = component_space_radius - duct_thickness;
+upwards_servo_mount_height = 5;
+upwards_servo_mount_thickness = 2;
 
 module servo_voids()
 {
     servo_x = 12;
     servo_y = 31.6;
     servo_z = 25;
-    servo_extension_z = 32;
+    servo_extension_z = 34;
     
     angle_delta = 360 / num_inner_braces;
     for( angle = [0 : angle_delta : 359] )
@@ -56,11 +61,92 @@ module servo_voids()
             translate([0, -servo_y/2, 0])
             cube([servo_x, servo_y, servo_extension_z], center=true);
             
-            screw_hole_z_translation = (servo_z/2 + 2);
-            for(z_translation = [-screw_hole_z_translation, screw_hole_z_translation])
-            translate([0, 0, z_translation])
-            rotate([90, 0, 0])
-            cylinder(d=2, h=servo_z, center=true);
+//            screw_hole_z_translation = (servo_z/2 + 2);
+//            for(z_translation = [-screw_hole_z_translation, screw_hole_z_translation])
+//            translate([0, 0, z_translation])
+//            rotate([90, 0, 0])
+//            cylinder(d=2, h=servo_z, center=true);
+        }
+    }
+}
+
+module servo_upwards_supports()
+{
+    servo_x = 30;
+    servo_y = 2.5;
+    servo_z = 8;
+//    servo_support_z_translation = servo_z_translation + 29.5;
+    servo_support_z_translation = servo_z_translation + 26;
+//    servo_extension_z = 60;
+    
+    angle_delta = 360 / num_inner_braces;
+    for( angle = [0 : angle_delta : 359] )
+    {
+        rotate([0, 0, angle + servo_angle_offset])
+        translate([0, 0, servo_support_z_translation])
+        translate([0, 0, servo_z/2])
+        translate([0, component_space_radius, 0])
+        translate([0, -duct_thickness, 0])
+        translate([0, -servo_y/2, 0])
+        translate([0, -0.5, 0])
+        union()
+        {
+            roundedcube([servo_x, servo_y, servo_z], center=true);
+            
+//            translate([0, -servo_y/2, 0])
+//            cube([servo_x, servo_y, servo_extension_z], center=true);
+            
+//            screw_hole_z_translation = (servo_z/2 + 2);
+//            for(z_translation = [-screw_hole_z_translation, screw_hole_z_translation])
+//            translate([0, 0, z_translation])
+//            rotate([90, 0, 0])
+//            cylinder(d=2, h=servo_z, center=true);
+        }
+    }
+}
+
+module servo_plug_ring()
+{
+    servo_x = 5;
+    servo_y = 31.6;
+    servo_z = 25;
+
+    height_differential = 0.5;
+    top_radius_difference = 1;
+    servo_plug_ring_height = servo_z_translation;
+    
+    servo_plug_ring_radius_offset = 0.1;
+    servo_plug_ring_radius = component_space_radius - duct_thickness - servo_plug_ring_radius_offset;
+    
+    s = 1000;
+    
+    difference()
+    {
+        hull()
+        {
+            cylinder(r=servo_plug_ring_radius, h=servo_plug_ring_height * (1 - height_differential));
+            
+            translate([0, 0, servo_z_translation*(1-height_differential)])
+            cylinder(r=servo_plug_ring_radius - top_radius_difference, h=servo_plug_ring_height * height_differential);
+        }
+        
+        cylinder(r=component_space_radius - duct_thickness - 3, h=servo_plug_ring_height);
+    }
+    
+    angle_delta = 360 / num_inner_braces;
+    difference()
+    {
+        for( angle = [0 : angle_delta : 359] )
+        {
+            rotate([0, 0, angle + servo_angle_offset])
+            translate([0, component_space_radius/2 - 1, servo_z_translation/2])
+            roundedcube([servo_x, component_space_radius, servo_z_translation], center=true);
+        }
+        
+        difference()
+        {
+            cube(s, center=true);
+            cylinder(r=component_space_radius - duct_thickness - 3, h=servo_z_translation);
         }
     }
 }
@@ -113,7 +199,8 @@ module control_surfaces()
     {
         rotate([0, 0, angle])
 //        translate([0, (radius - component_space_radius) + control_surface_length/3,  control_surface_height])
-        translate([0, (duct_radius + component_space_radius)/2 - 4/2,  control_surface_height + control_surface_vertical_offset_idk])
+//        translate([0, (duct_radius + component_space_radius)/2 - 4,  control_surface_height + control_surface_vertical_offset_idk])
+        translate([0, (duct_radius + component_space_radius)/2 + control_surface_y_offset,  control_surface_height + control_surface_vertical_offset_idk])
         rotate([0, 0, 90])
         control_surface_hinge();
     }
@@ -187,7 +274,7 @@ module motor_mount()
             }
             
             translate([0, -motor_wire_outlet_radius, -motor_mount_thickness/2])
-            roundedcube([10, 5, 10], r=4, center=true);
+            roundedcube([10, 5, 10], center=true);
         }
     }
 }
@@ -265,8 +352,22 @@ module unirotor_drone_body(duct_radius=duct_radius, duct_height=duct_height, com
             servo_voids();
         }
     }
+    
+    servo_upwards_supports();
+    
     translate([0, 0, duct_height - propeller_cavity_height])
     motor_mount();
+    
+    // upwards 
+    upwards_servo_mount_radius = component_space_radius - duct_thickness;
+    upwards_servo_mount_height = 5;
+    upwards_servo_mount_thickness = 2;
+//    translate([0, 0, 36])
+//    difference()
+//    {
+//        cylinder(r=upwards_servo_mount_radius, h=upwards_servo_mount_height);
+//        cylinder(r=upwards_servo_mount_radius - upwards_servo_mount_thickness, h=upwards_servo_mount_height);
+//    }
 }
 
 //unirotor_drone_body();
@@ -291,3 +392,5 @@ difference()
         }
     }
 }
+
+servo_plug_ring();
